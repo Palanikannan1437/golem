@@ -18,7 +18,7 @@ export const useConversations = () => {
     const { apiKey } = useSettings()
     const { maxTokens, modelUsed } = useSettings()
     const { knowledgeList } = useKnowledge()
-    const { complete } = useLanguageModel()
+    const { complete } = useLanguageModel('mlc')
 
     const currentConversationId = useState<string>(() => '')
     const currentConversation = useState<types.Conversation | null>(() => null)
@@ -337,7 +337,7 @@ export const useConversations = () => {
             }
         }
 
-        const { sendMessage } = useLanguageModel()
+        const { sendMessage } = useLanguageModel('mlc')
         const abortController = new AbortController()
         conversationAbortMap.value[fromConversation.id] = abortController
         const { data: assistantMessage, error: messageError } = await handle(sendMessage({

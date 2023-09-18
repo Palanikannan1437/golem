@@ -2,7 +2,7 @@
 definePageMeta({
     layout: 'blank',
 })
-const { sendMessage } = useLanguageModel()
+const { sendMessage } = useLanguageModel('mlc')
 
 const data = ref()
 const status = ref()

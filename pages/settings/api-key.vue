@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 const { apiKey, instanceApiKey } = useSettings()
 const { isDetaEnabled } = useDeta()
-const { checkIfAPIKeyIsValid } = useLanguageModel()
+const { checkIfAPIKeyIsValid } = useLanguageModel('mlc')
 const apiKeyInput = syncStorageRef(apiKey)
 const client = useClient()
 

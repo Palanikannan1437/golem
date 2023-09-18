@@ -3,13 +3,40 @@ import type { NitroFetchOptions } from 'nitropack'
 import { nanoid } from 'nanoid'
 import { streamOpenAIResponse } from '~~/utils/fetch-sse'
 
-export function useLanguageModel() {
+interface AIService {
+    basePath: string
+    model: string
+    completion_endpoint: string
+    name: string
+}
+
+const AIServices: Record<string, AIService> = {
+    openai: {
+        name: "openai",
+        basePath: 'https://api.openai.com/v1',
+        model: 'gpt-3.5-turbo',
+        completion_endpoint: 'https://api.openai.com/v1/chat/completions',
+    },
+    mlc: {
+        name: "mlc",
+        basePath: `${process.env.MLC_AI_API_BASE}`,
+        model: 'vicuna-v1-7b',
+        completion_endpoint: `${process.env.MLC_AI_API_BASE}/chat/completions`,
+    },
+    // Add more AI services here
+}
+
+export function useLanguageModel(aiService: string) {
     const { apiKey } = useSettings()
+    const service = AIServices[aiService]
 
     async function complete(prompt: string, params?: LMCompleteParams) {
-        const client = new OpenAIApi(new Configuration({
+        const configuration = new Configuration({
             apiKey: apiKey.value || '',
-        }))
+            basePath: service.basePath,
+        })
+
+        const client = new OpenAIApi(configuration)
 
         const additionalParams = {
             temperature: params?.temperature || 0.8,
@@ -18,7 +45,7 @@ export function useLanguageModel() {
         }
 
         const response = await client.createChatCompletion({
-            model: 'gpt-3.5-turbo',
+            model: service.model,
             messages: [{
                 role: 'system',
                 content: params?.systemMessage || 'This is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.',
@@ -34,7 +61,8 @@ export function useLanguageModel() {
 
     async function sendMessage(options: any) {
         const { onProgress, signal, ...requestBody } = options
-        const CHAT_COMPLETION_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
+
+        const CHAT_COMPLETION_ENDPOINT = service.completion_endpoint
 
         const requestOptions: NitroFetchOptions<typeof CHAT_COMPLETION_ENDPOINT> = {
             method: 'POST',
@@ -119,6 +147,9 @@ export function useLanguageModel() {
     }
 
     const checkIfAPIKeyIsValid = async (newApiKey: string) => {
+        if (service.name === 'mlc') {
+            return true
+        }
         const res = await $fetch<any>('https://api.openai.com/v1/engines', {
             headers: {
                 Authorization: `Bearer ${newApiKey || apiKey.value}`,

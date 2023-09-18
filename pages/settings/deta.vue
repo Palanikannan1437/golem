@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 const client = useClient()
 const { instanceApiKey, apiKey } = useSettings()
-const { checkIfAPIKeyIsValid } = useLanguageModel()
+const { checkIfAPIKeyIsValid } = useLanguageModel('mlc')
 const apiKeyInput = ref<string>(instanceApiKey.value || '')
 const apiKeyError = ref<string | false>(false)
 
